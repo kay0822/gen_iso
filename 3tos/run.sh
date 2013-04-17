@@ -1,5 +1,5 @@
 #!/bin/bash
-BASE_DIR="/home/kimi/3tos"
+BASE_DIR="/home/gen_iso/3tos"
 ISO_DIR="/home/iso"
 BASE_ISO="${ISO_DIR}/CentOS-6.3-x86_64-bin-DVD1.iso"
 USE_DEBUG=true
@@ -101,6 +101,7 @@ if [ ! -e "${ROM_DIR}" ];then
 	exit -1
 fi
 mount -o loop ${BASE_ISO} ${ROM_DIR}
+mkdir -p ${BUILD_DIR}
 
 ########################
 ##  Generate Configs  ##
@@ -148,7 +149,6 @@ if ${PARAM_SKIP_COPY};then
 else
 
 INFO "coping files\n"
-mkdir -p ${BUILD_DIR}
 rm -rf ${BUILD_DIR}/*
 
 ls -a ${ROM_DIR} | grep -vE '^\.*$|^Packages$'|xargs -n 1 -I {} cp -rf ${ROM_DIR}/{}  ${BUILD_DIR}/
