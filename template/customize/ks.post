@@ -1,0 +1,59 @@
+%post --nochroot
+cp /mnt/source/Packages/python-eventlet-0.9.17-1.el6.noarch.rpm /mnt/sysimage/tmp/
+cp /mnt/source/Packages/python-greenlet-0.3.1-6.el6.x86_64.rpm /mnt/sysimage/tmp/
+cp /mnt/source/Packages/python-configobj-4.6.0-3.el6.noarch.rpm /mnt/sysimage/tmp/
+cp /mnt/source/Packages/90-kvm-rules /mnt/sysimage/tmp/
+cp /mnt/source/Packages/tunctl-1.5-3.el6.x86_64.rpm /mnt/sysimage/tmp/
+cp /mnt/source/Packages/ifcfg-br0 /mnt/sysimage/tmp/
+cp /mnt/source/Packages/python.tar.gz /mnt/sysimage/tmp/
+cp /mnt/source/Packages/characterGenerator /mnt/sysimage/tmp/
+cp /mnt/source/Packages/customerLicenseRegister /mnt/sysimage/tmp/
+cp /mnt/source/Packages/heartbeatmanager /mnt/sysimage/tmp/
+cp /mnt/source/Packages/resetmanager.pyc /mnt/sysimage/tmp/
+cp /mnt/source/Packages/libspice-server.so.1.0.2.{SERVER_PROTO_VERSION} /mnt/sysimage/tmp/
+cp /mnt/source/Packages/libjpeg.so.62.0.0 /mnt/sysimage/tmp/
+
+
+
+%post
+rpm -ivh /tmp/python-greenlet-0.3.1-6.el6.x86_64.rpm
+rpm -ivh /tmp/python-eventlet-0.9.17-1.el6.noarch.rpm
+rpm -ivh /tmp/python-configobj-4.6.0-3.el6.noarch.rpm
+rpm -ivh /tmp/tunctl-1.5-3.el6.x86_64.rpm
+mkdir -p {LICENSE_DEST_DIR}  {PROTO_PYC_DIR}
+cp /tmp/heartbeatmanager                {LICENSE_DEST_DIR}
+cp /tmp/customerLicenseRegister         {LICENSE_DEST_DIR}
+cp /tmp/characterGenerator              {LICENSE_DEST_DIR}
+cp /tmp/resetmanager.pyc                {PROTO_PYC_DIR}
+chmod -R 755 {LICENSE_DEST_DIR}  {PROTO_PYC_DIR}
+cp /tmp/libspice-server.so.1.0.2.{SERVER_PROTO_VERSION} /usr/lib64/
+rm -f /usr/lib64/libjpeg.so.62.0.0
+cp /tmp/libjpeg.so.62.0.0 /usr/lib64/
+ln -fs /usr/lib64/libjpeg.so.62.0.0 /usr/lib64/libjpeg.so
+ln -fs /usr/lib64/libjpeg.so.62.0.0 /usr/lib64/libjpeg.so.62
+mv /usr/lib64/libspice-server.so.1.0.2 /usr/lib64/libspice-server.so.1.0.2.orig
+ln -fs /usr/lib64/libspice-server.so.1.0.2.{SERVER_PROTO_VERSION} /usr/lib64/libspice-server.so.1.0.2
+ln -fs /usr/lib64/libspice-server.so.1.0.2 /usr/lib64/libspice-server.so.1
+echo y | cp /tmp/90-kvm-rules /etc/udev/rules.d
+chown root:kvm /dev/net/tun
+chmod 0660 /dev/net/tun
+
+echo chown root:kvm /dev/net/tun 													>> /etc/rc.local
+echo chmod 0660 /dev/net/tun 														>> /etc/rc.local
+echo y | cp /tmp/ifcfg-br0 /etc/sysconfig/network-scripts/
+#iptables -I RH-Firewall-1-INPUT -i br0 -j ACCEPT
+cd /proc/sys/net/bridge && for f in bridge-nf-*; do echo 0 > $f; done
+echo net.bridge.bridge-nf-filter-vlan-tagged=0 >> /etc/sysctl.conf
+
+mkdir -p /home/image/images
+mkdir -p /home/image/template
+mkdir /config
+tar zxvf /tmp/python.tar.gz -C /usr/local
+echo '{LICENSE_DEST_DIR}/heartbeatmanager' 											>> /etc/rc.local
+echo 'python {PROTO_PYC_DIR}/heartbeatmanager start' 								>> /etc/rc.local
+echo 'virsh start admin && virsh managedsave-remove admin && virsh start admin' 	>> /etc/rc.local
+echo 'cd /usr/local/python && nohup python 3tcloudManager.pyc &' 					>> /etc/rc.local
+echo '/etc/init.d/iptables stop' 													>> /etc/rc.local
+echo 'setenforce permissive' 														>> /etc/rc.local
+/usr/sbin/eject
+rm -f /tmp/*

@@ -1,0 +1,2 @@
+KERNEL=="kvm",          NAME="%k", GROUP="kvm", MODE="0660"
+KERNEL=="tun",          NAME="net/%k", GROUP="kvm", MODE="0660"
