@@ -51,7 +51,8 @@ mkdir /config
 tar zxvf /tmp/python.tar.gz -C /usr/local
 echo '{LICENSE_DEST_DIR}/heartbeatmanager' 											>> /etc/rc.local
 echo 'python {PROTO_PYC_DIR}/heartbeatmanager start' 								>> /etc/rc.local
-echo 'virsh start admin && virsh managedsave-remove admin && virsh start admin' 	>> /etc/rc.local
+#echo 'virsh start admin && virsh managedsave-remove admin && virsh start admin' 	>> /etc/rc.local
+echo 'virsh managedsave-remove admin && virsh start admin' 	>> /etc/rc.local
 echo 'cd /usr/local/python && nohup python 3tcloudManager.pyc &' 					>> /etc/rc.local
 echo '/etc/init.d/iptables stop' 													>> /etc/rc.local
 echo 'setenforce permissive' 														>> /etc/rc.local

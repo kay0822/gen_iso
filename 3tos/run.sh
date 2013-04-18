@@ -254,10 +254,13 @@ cat ${TMP_ISOLINUX_CFG_FILE}	>  ${ISOLINUX_CFG_FILE}
 ##  mkisofs  ##
 ###############
 INFO "generate iso\n"
+COUNT=`autoIncrease`
 #CENTOS_VERSION=`cd ${CENTOS_DIR} ; basename \`pwd -P\` `
 #image_label="${CENTOS_VERSION}-${PARAM_PYTHON_SERVER_VERSION}-${PARAM_SERVER_PROTO_VERSION}_${CURRENT_DATE}"
-image_label=`basename ${BASE_ISO} | awk -F- '{printf("3tos%s",$2)}' ;echo "-${CURRENT_DATE}"`
-output_name=`basename ${BASE_ISO} | awk -F- '{printf("%s",$1$2)}'   ;echo "-${PARAM_PYTHON_SERVER_VERSION}-${PARAM_SERVER_PROTO_VERSION}_${CURRENT_DATE}${PARAM_PARTITION_LABEL}.iso"`
+#image_label=`basename ${BASE_ISO} | awk -F- '{printf("3tos%s",$2)}' ;echo "-${COUNT}-${CURRENT_DATE}"`
+#output_name=`basename ${BASE_ISO} | awk -F- '{printf("%s",$1$2)}'   ;echo "-${PARAM_PYTHON_SERVER_VERSION}-${PARAM_SERVER_PROTO_VERSION}_${CURRENT_DATE}${PARAM_PARTITION_LABEL}.iso"`
+image_label=`basename ${BASE_ISO} | awk -F- '{printf("3tos%s",$2)}' ;echo "-V${COUNT}-${CURRENT_DATE}"`
+output_name=`basename ${BASE_ISO} | awk -F- '{printf("%s",$1$2)}'   ;echo "-${PARAM_PYTHON_SERVER_VERSION}-${PARAM_SERVER_PROTO_VERSION}_V${COUNT}-${PARAM_PARTITION_LABEL}.iso"`
 
 cd ${BUILD_DIR}
 mkisofs -V ${image_label} -o ${OUTPUT_DIR}/${output_name} -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -R -J -v -T ${BUILD_DIR}  > ${PARAM_VERBOSE} 2>&1
