@@ -45,15 +45,18 @@ PROTO_PACKAGE_RELEASE_DIR_URL="http://${PROTO_RELEASE_SERVER}/3tcloud/serverrele
 SED_REGEX_STRING='s/\//\\\//g'
 LICENSE_DEST_DIR="/opt/3tcloud/server/bin"
 LICENSE_DEST_DIR_REGEX=`echo ${LICENSE_DEST_DIR} |sed ${SED_REGEX_STRING}`
+LICENSE_DEST_DIR_3TEV="/usr/bin"
+LICENSE_DEST_DIR_3TEV_REGEX=`echo ${LICENSE_DEST_DIR_3TEV} |sed ${SED_REGEX_STRING}`
 BIN_DIR="/usr/bin"
 BIN_DIR_REGEX=`echo ${BIN_DIR} |sed ${SED_REGEX_STRING}`
 PROTO_PYC_DIR="/opt/3tcloud/server/bin"
 PROTO_PYC_DIR_REGEX=`echo ${PROTO_PYC_DIR} |sed ${SED_REGEX_STRING}`
 PROTO_PYC_DIR_3TEV="/usr/bin"
-PROTO_PYC_DIR_3TEV_REGEX=`echo ${PROTO_PYC_DIR} |sed ${SED_REGEX_STRING}`
+PROTO_PYC_DIR_3TEV_REGEX=`echo ${PROTO_PYC_DIR_3TEV} |sed ${SED_REGEX_STRING}`
 
 #-------- rhevh ------------
 EXT3FS_DIR="${BASE_DIR}/ext3fs"
+EXT3FS_BAK_DIR="${BASE_DIR}/ext3fs.bak"
 
 SQUASHFS_IMG="${BUILD_DIR}/LiveOS/squashfs.img"
 SQUASHFS_ROOT="${BUILD_DIR}/LiveOS/squashfs_root"
@@ -78,6 +81,11 @@ function ERROR(){
 	LOGGING "ERROR: "  "$@"
 	exit 1
 }
-
+COUNT_FILE="${BASE_DIR}/.count"
+function autoIncrease(){
+	t_count=$(( `cat ${COUNT_FILE}` + 1 ))
+	echo ${t_count} > ${COUNT_FILE}
+	cat ${COUNT_FILE}
+}
 
 

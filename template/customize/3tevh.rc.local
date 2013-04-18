@@ -1,4 +1,4 @@
 iptables -I INPUT -s 0/0 -d 0/0 -j ACCEPT
-{LICENSE_DEST_DIR}/heartbeatmanager
-python {PROTO_PYC_DIR}/resetmanager.pyc start
+{LICENSE_DEST_DIR_3TEV}/heartbeatmanager
+python {PROTO_PYC_DIR_3TEV}/resetmanager.pyc start
 

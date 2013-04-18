@@ -103,6 +103,12 @@ fi
 mount -o loop ${BASE_ISO} ${ROM_DIR}
 mkdir -p ${BUILD_DIR}
 
+if ${PARAM_SKIP_COPY};then
+	INFO "remove skipped\n"
+else
+	rm -rf ${BUILD_DIR}/*
+fi
+
 ########################
 ##  Generate Configs  ##
 ########################
@@ -149,8 +155,6 @@ if ${PARAM_SKIP_COPY};then
 else
 
 INFO "coping files\n"
-rm -rf ${BUILD_DIR}/*
-
 ls -a ${ROM_DIR} | grep -vE '^\.*$|^Packages$'|xargs -n 1 -I {} cp -rf ${ROM_DIR}/{}  ${BUILD_DIR}/
 mkdir -p ${BUILD_DIR}/Packages
 for package in `cat ${TMP_PACKAGE_LIST}`;do

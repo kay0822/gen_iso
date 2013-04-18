@@ -15,7 +15,7 @@ EOF
 }
 #PARAM_SERVER_PROTO_VERSION="1.4.1.3"
 PARAM_SERVER_PROTO_VERSION=
-PARAM_VERBOSE=
+PARAM_VERBOSE="/dev/null"
 IS_v_SET=false
 IS_P_SET=false
 while getopts "hP:v" opt ; do
@@ -26,11 +26,14 @@ while getopts "hP:v" opt ; do
         ;;
         v)
             IS_v_SET=true
-            PARAM_VERBOSE=">  /dev/null"
+            PARAM_VERBOSE="/dev/stdout"
         ;;
         h)
             usage
         ;;
+		*)
+			ERROR "Unknown option -> " $opt
+		;;
     esac
 done
 
@@ -121,8 +124,8 @@ for package in `ls -a ${CUSTOMIZE_PROTO_DIR}/${PARAM_SERVER_PROTO_VERSION}  | gr
 		mkdir -p ${EXT3FS_DIR}${PROTO_PYC_DIR_3TEV}
 		doCopy ${CUSTOMIZE_PROTO_DIR}/${PARAM_SERVER_PROTO_VERSION}/${package}  ${EXT3FS_DIR}${PROTO_PYC_DIR_3TEV}
 	elif [ "${package}" == "characterGenerator" -o "${package}" == "customerLicenseRegister" -o "${package}" == "heartbeatmanager" ];then
-		mkdir -p ${EXT3FS_DIR}${LICENSE_DEST_DIR}
-		doCopy ${CUSTOMIZE_PROTO_DIR}/${PARAM_SERVER_PROTO_VERSION}/${package}  ${EXT3FS_DIR}${LICENSE_DEST_DIR}/
+		mkdir -p ${EXT3FS_DIR}${LICENSE_DEST_DIR_3TEV}
+		doCopy ${CUSTOMIZE_PROTO_DIR}/${PARAM_SERVER_PROTO_VERSION}/${package}  ${EXT3FS_DIR}${LICENSE_DEST_DIR_3TEV}/
 	elif [ ! "${package}" == "libheartbeat.so" -a ! "${package}" == "install.sh" ];then
 		mkdir -p ${EXT3FS_DIR}${BIN_DIR}
 		doCopy ${CUSTOMIZE_PROTO_DIR}/${PARAM_SERVER_PROTO_VERSION}/${package}  ${EXT3FS_DIR}${BIN_DIR}/
@@ -132,9 +135,9 @@ done
 ###########################
 ##  rc.local && selinux  ##
 ###########################
-cat ${CUSTOMIZE_RC_LOCAL} | sed -e "s/{SERVER_PROTO_VERSION}/${PARAM_SERVER_PROTO_VERSION}/" 				\
-								-e "s/{LICENSE_DEST_DIR}/${LICENSE_DEST_DIR_REGEX}/" 	\
-								-e "s/{BIN_DIR}/${BIN_DIR_REGEX}/" 			\
+cat ${CUSTOMIZE_RC_LOCAL} | sed -e "s/{SERVER_PROTO_VERSION}/${PARAM_SERVER_PROTO_VERSION}/" 	\
+								-e "s/{BIN_DIR}/${BIN_DIR_REGEX}/" 								\
+								-e "s/{LICENSE_DEST_DIR_3TEV}/${LICENSE_DEST_DIR_3TEV_REGEX}/" 	\
 								-e "s/{PROTO_PYC_DIR_3TEV}/${PROTO_PYC_DIR_3TEV_REGEX}/" >> ${EXT3FS_DIR}/etc/rc.local
 TMP_SELINUX="/tmp/selinux.tmp"
 cat ${EXT3FS_DIR}/etc/sysconfig/selinux | sed 's/SELINUX=enforcing/SELINUX=permissive/g' 	>  ${TMP_SELINUX}
@@ -144,6 +147,9 @@ cat ${TMP_SELINUX} 	>  ${EXT3FS_DIR}/etc/sysconfig/selinux
 ##################
 ##  mksquashfs  ##
 ##################
+mkdir -p ${EXT3FS_BAK_DIR}
+rm -rf ${EXT3FS_BAK_DIR}/*
+cp -a ${EXT3FS_DIR}/* ${EXT3FS_BAK_DIR}/
 sync
 umount -d ${EXT3FS_DIR} 2>/dev/null
 umount -d ${EXT3FS_DIR} 2>/dev/null
@@ -155,9 +161,12 @@ sync
 ###############
 ##  mkisofs  ##
 ###############
-output_name=`basename ${BASE_ISO} | awk -F- '{printf("%s",$1$2)}' ; echo "-${PARAM_SERVER_PROTO_VERSION}_${CURRENT_DATE}.iso"`
+COUNT=`autoIncrease`
+#output_name=`basename ${BASE_ISO} | awk -F- '{printf("%s",$1$2)}' ; echo "-${PARAM_SERVER_PROTO_VERSION}_${CURRENT_DATE}.iso"`
+output_name=`basename ${BASE_ISO} | awk -F- '{printf("%s",$1$2)}' ; echo "-V${COUNT}-${PARAM_SERVER_PROTO_VERSION}_${CURRENT_DATE}.iso"`
 image_label=`cat ${ISOLINUX_CFG_FILE} | grep -E "append.*initrd.*CDLABEL" |sed '2,$d' | sed 's/.*CDLABEL=//' |awk '{print $1}'`
-mkisofs -V ${image_label} -o ${OUTPUT_DIR}/${output_name} -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -R -J -v -T ${BUILD_DIR} ${PARAM_VERBOSE}
+mkisofs -V ${image_label} -o ${OUTPUT_DIR}/${output_name} -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -R -J -v -T ${BUILD_DIR} > ${PARAM_VERBOSE} 2>&1
+INFO "ISO -> %s\n" "${OUTPUT_DIR}/${output_name}"
 
 ##############
 ## CleanUp  ##
