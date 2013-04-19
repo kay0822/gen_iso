@@ -1,7 +1,7 @@
 #!/bin/bash
 BASE_DIR="/home/gen_iso/3tev"                     
 ISO_DIR="/home/iso"
-BASE_ISO="${ISO_DIR}/rhevh-6.3-20121025.0.iso"
+BASE_ISO="${ISO_DIR}/rhevh-6.3-20121121.0.iso"
 . ${BASE_DIR}/config.sh
 
 function  usage(){
