@@ -1,4 +1,5 @@
 #!/bin/bash
+USE_DEBUG=true
 # ------ iso ------
 #BASE_DIR="/home/kimi/3tos"
 #ISO_DIR="/home/iso"
@@ -64,20 +65,29 @@ EXT3FS_IMG="${SQUASHFS_ROOT}/LiveOS/ext3fs.img"
 
 CUSTOMIZE_RC_LOCAL="${CUSTOMIZE_DIR}/3tevh.rc.local"
 
+ECHO_COLOR="\033[0m"
+ECHO_COLOR_DEFAULT="\033[0m"
 function LOGGING(){
-	echo -n "$1"
+	echo -en "${ECHO_COLOR}$1${ECHO_COLOR_DEFAULT}"
 	shift 1
 	printf "$@"
 }
 function INFO(){
-	LOGGING "INFO: "  "$@"
+	ECHO_COLOR="\033[32m"
+	LOGGING "INFO:  "  "$@"
+}
+function WARN(){
+	ECHO_COLOR="\033[33m"
+	LOGGING "WARN:  "  "$@"
 }
 function DEBUG(){
-	if USE_DEBUG; then
+	if ${USE_DEBUG}; then
+		ECHO_COLOR="\033[34m"
 		LOGGING "DEBUG: "  "$@"
 	fi
 }
 function ERROR(){
+	ECHO_COLOR="\033[31m"
 	LOGGING "ERROR: "  "$@"
 	exit 1
 }

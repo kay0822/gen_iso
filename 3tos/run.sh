@@ -11,7 +11,9 @@ Usage: $0 -P version -S version [options]
     -P, --protocol version      Server [P]rotocal version           
     -S, --server   version      [S]erver(python.tar.gz) version
 [options]:
+    -I, --image    [image]      Specify the base [I]mage, example: -I"/home/iso/abc.iso" (without space!!!)
     -v, --verbose               Print [v]erbose information
+    -t, --test                  Run for [t]est, output will be put in fortest/
     -h, --help                  Display this [h]elp usage
     --skip-copy                 skip coping packages, better to use --skip-cp-a-repo 
     --skip-repo                 skip create reposite, better to use --skip-cp-a-repo
@@ -29,33 +31,73 @@ PARAM_SKIP_PARTITIONING="\1"
 PARAM_PARTITION_LABEL=
 PARAM_SKIP_COPY=false
 PARAM_SKIP_REPO=false
+PARAM_BASE_ISO=
 IS_v_SET=false
 IS_P_SET=false
 IS_S_SET=false
+IS_t_SET=false
+IS_I_SET=false
 
-args=`getopt -a -o P:S:v -l protocol:,server:,skip-partition,skip-copy,skip-repo,skip-cp-a-repo,help -- "$@"`
+args=`getopt -o :P:S:I::vth -l protocol:,server:,image::,verbose,test,help,skip-partition,skip-copy,skip-repo,skip-cp-a-repo -- "$@"`
 eval set -- "$args"
 while true; do
 	case $1 in
 		-P|--protocol)
 			IS_P_SET=true
-			PARAM_SERVER_PROTO_VERSION=$2
+			PARAM_SERVER_PROTO_VERSION="$2"
 			if ! [[ "${PARAM_SERVER_PROTO_VERSION}" =~ [0-9]+\.[0-9]+\.[0-9]+\.[0-9]+ ]];then
-				ERROR "protocol version invalid, example: 1.4.1.3\n"
+				ERROR "invalid protocol version: %s, example: 1.4.1.3\n" "$2"
 			fi
 			shift
 		;;
 		-S|--server)
 			IS_S_SET=true
-			PARAM_PYTHON_SERVER_VERSION=$2
+			PARAM_PYTHON_SERVER_VERSION="$2"
 			if ! [[ "${PARAM_PYTHON_SERVER_VERSION}" =~ [0-9]+\.[0-9]+\.[0-9]+ ]];then
-				ERROR "server version invalid, example: 1.3.1\n"
+				ERROR "invalid server version: %s, example: 1.3.1\n" "$2"
 			fi
+			shift
+		;;
+		-I|--image)
+			IS_I_SET=true
+			case $2 in
+				"")
+					echo "Images:"
+					echo "------------------------------"
+					ISOs=(`ls ${ISO_DIR}/*.iso`)
+					iso_count=${#ISOs[@]}
+					for((i = 0; i < ${iso_count} ; i++)){
+						printf "%3d\t%s\n" "$i" "${ISOs[$i]}"
+					}
+					echo "------------------------------"
+					echo -n "choose images above: "
+					read opt
+					if ! [[ "$opt" =~ ^[0-9]{1,3}$ ]] || ! [ $opt -lt ${iso_count} ];then
+						ERROR "invalid option: %s\n" "$opt"
+					fi
+					PARAM_BASE_ISO=${ISOs[$opt]}
+				;;
+				*)
+					if [ ! -e "$2" ];then
+						DEBUG "%s not exists\n" "$2"
+						ERROR "%s not exists\n" "$2"
+					elif ! [[ "$2" =~ .+\.iso ]];then
+						WARN "%s not end with .iso\n" "$2"
+						PARAM_BASE_ISO="$2"
+					else
+						PARAM_BASE_ISO="$2"
+					fi
+				;;
+			esac
+			INFO "base image -> %s\n" ${PARAM_BASE_ISO}
 			shift
 		;;
 		-v|--verbose)
 			IS_v_SET=true
 			PARAM_VERBOSE="/dev/stdout"
+		;;
+		-t|--test)
+			IS_t_SET=true
 		;;
 		-h|--help)
 			usage
@@ -78,12 +120,18 @@ while true; do
 			shift
 			break
 		;;
+		*)
+			ERROR "Unknown option -> %s\n" $1
+		;;
 	esac
 	shift
 done
 
 if ! ( ${IS_P_SET} && ${IS_S_SET} ) ; then
 	usage
+fi
+if ${IS_I_SET}; then
+	BASE_ISO=${PARAM_BASE_ISO}
 fi
 
 ###########
@@ -261,9 +309,16 @@ COUNT=`autoIncrease`
 #output_name=`basename ${BASE_ISO} | awk -F- '{printf("%s",$1$2)}'   ;echo "-${PARAM_PYTHON_SERVER_VERSION}-${PARAM_SERVER_PROTO_VERSION}_${CURRENT_DATE}${PARAM_PARTITION_LABEL}.iso"`
 image_label=`basename ${BASE_ISO} | awk -F- '{printf("3tos%s",$2)}' ;echo "-V${COUNT}-${CURRENT_DATE}"`
 output_name=`basename ${BASE_ISO} | awk -F- '{printf("%s",$1$2)}'   ;echo "-${PARAM_PYTHON_SERVER_VERSION}-${PARAM_SERVER_PROTO_VERSION}_V${COUNT}-${PARAM_PARTITION_LABEL}.iso"`
+md5_name="${output_name}.md5"
+
+if ${IS_t_SET};then
+	OUTPUT_DIR="${OUTPUT_DIR}/fortest"
+	mkdir -p ${OUTPUT_DIR}
+fi
 
 cd ${BUILD_DIR}
 mkisofs -V ${image_label} -o ${OUTPUT_DIR}/${output_name} -b isolinux/isolinux.bin -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table -R -J -v -T ${BUILD_DIR}  > ${PARAM_VERBOSE} 2>&1
+md5sum  ${OUTPUT_DIR}/${output_name} > ${OUTPUT_DIR}/${md5_name}
 INFO "ISO -> %s\n" "${OUTPUT_DIR}/${output_name}"
 
 ###############
