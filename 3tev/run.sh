@@ -58,7 +58,6 @@ while true; do
                 ;;
                 *)
                     if [ ! -e "$2" ];then
-                        DEBUG "%s not exists\n" "$2"
                         ERROR "%s not exists\n" "$2"
                     elif ! [[ "$2" =~ .+\.iso ]];then
                         WARN "%s not end with .iso\n" "$2"
