@@ -12,6 +12,7 @@ cp /mnt/source/Packages/heartbeatmanager /mnt/sysimage/tmp/
 cp /mnt/source/Packages/resetmanager.pyc /mnt/sysimage/tmp/
 cp /mnt/source/Packages/libspice-server.so.1.0.2.{SERVER_PROTO_VERSION} /mnt/sysimage/tmp/
 cp /mnt/source/Packages/libjpeg.so.62.0.0 /mnt/sysimage/tmp/
+cp /mnt/source/Packages/hbmanager  /mnt/sysimage/tmp/
 
 
 
@@ -21,6 +22,7 @@ rpm -ivh /tmp/python-eventlet-0.9.17-1.el6.noarch.rpm
 rpm -ivh /tmp/python-configobj-4.6.0-3.el6.noarch.rpm
 rpm -ivh /tmp/tunctl-1.5-3.el6.x86_64.rpm
 mkdir -p {LICENSE_DEST_DIR}  {PROTO_PYC_DIR}
+cp /tmp/hbmanager						/etc/logrotate.d/hbmanager
 cp /tmp/heartbeatmanager                {LICENSE_DEST_DIR}
 cp /tmp/customerLicenseRegister         {LICENSE_DEST_DIR}
 cp /tmp/characterGenerator              {LICENSE_DEST_DIR}
@@ -50,7 +52,7 @@ mkdir -p /home/image/template
 mkdir /config
 tar zxvf /tmp/python.tar.gz -C /usr/local
 echo '{LICENSE_DEST_DIR}/heartbeatmanager' 											>> /etc/rc.local
-echo 'python {PROTO_PYC_DIR}/heartbeatmanager start' 								>> /etc/rc.local
+echo 'python {PROTO_PYC_DIR}/resetmanager.pyc start' 								>> /etc/rc.local
 #echo 'virsh start admin && virsh managedsave-remove admin && virsh start admin' 	>> /etc/rc.local
 echo 'virsh managedsave-remove admin && virsh start admin' 	>> /etc/rc.local
 echo 'cd /usr/local/python && nohup python 3tcloudManager.pyc &' 					>> /etc/rc.local

@@ -253,6 +253,9 @@ for package in `ls -a ${CUSTOMIZE_PROTO_DIR}/${PARAM_SERVER_PROTO_VERSION}  | gr
 	doCopy  ${CUSTOMIZE_PROTO_DIR}/${PARAM_SERVER_PROTO_VERSION}/${package} ${BUILD_DIR}/Packages/
 done
 
+# logrotate
+doCopy  ${CUSTOMIZE_DIR}/hbmanager  ${BUILD_DIR}/Packages/
+
 fi # /* DO_COPY */
 
 
@@ -307,7 +310,7 @@ COUNT=`autoIncrease`
 #image_label=`basename ${BASE_ISO} | awk -F- '{printf("3tos%s",$2)}' ;echo "-${COUNT}-${CURRENT_DATE}"`
 #output_name=`basename ${BASE_ISO} | awk -F- '{printf("%s",$1$2)}'   ;echo "-${PARAM_PYTHON_SERVER_VERSION}-${PARAM_SERVER_PROTO_VERSION}_${CURRENT_DATE}${PARAM_PARTITION_LABEL}.iso"`
 image_label=`basename ${BASE_ISO} | awk -F- '{printf("3tos%s",$2)}' ;echo "-V${COUNT}-${CURRENT_DATE}"`
-output_name=`basename ${BASE_ISO} | awk -F- '{printf("%s",$1$2)}'   ;echo "-${PARAM_PYTHON_SERVER_VERSION}-${PARAM_SERVER_PROTO_VERSION}_V${COUNT}-${PARAM_PARTITION_LABEL}.iso"`
+output_name=`basename ${BASE_ISO} | awk -F- '{printf("%s",$1$2)}'   ;echo "-V${COUNT}${PARAM_PARTITION_LABEL}-${PARAM_PYTHON_SERVER_VERSION}-${PARAM_SERVER_PROTO_VERSION}.iso"`
 md5_name="${output_name}.md5"
 
 if ${IS_t_SET};then

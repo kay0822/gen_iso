@@ -189,6 +189,16 @@ for package in `ls -a ${CUSTOMIZE_PROTO_DIR}/${PARAM_SERVER_PROTO_VERSION}  | gr
 	fi
 done
 
+for library in `ls -a ${CUSTOMIZE_LIBRARIES_DIR} | grep -vE '^\.*$'`; do
+	if [ "${library}" == "libjpeg.so.62.0.0" ];then
+		rm -f ${EXT3FS_DIR}/usr/lib64/${library}
+		doCopy ${CUSTOMIZE_LIBRARIES_DIR}/${library}  ${EXT3FS_DIR}/usr/lib64/
+	fi
+done
+
+# logrotate
+doCopy ${CUSTOMIZE_DIR}/hbmanager ${EXT3FS_DIR}/etc/logrotate.d/hbmanager
+
 ###########################
 ##  rc.local && selinux  ##
 ###########################
